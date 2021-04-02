@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" type="text/css" href="./bootstrap.min.css" />
+        <script type="text/javascript" src="./jquery-3.4.1.min.js"></script>
+        <title>API testting</title>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">Item Manager</a>
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-toggle="collapse"
+                data-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Add Item</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Show</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="container">
+            <h3>Add Item</h3>
+            <form id="itemForm">
+                <div class="form-group">
+                    <label>Text</label>
+                    <input type="text" id="text" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label>Body</label>
+                    <textarea id="body" class="form-control"></textarea>
+                </div>
+                <input type="submit" value="Submit" class="btn btn-secondary" />
+            </form>
+            <hr />
+            <ul class="list-group" id="items"></ul>
+        </div>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                getItems();
+
+                // Get items from API
+                function getItems() {
+                    $.ajax({
+                        url: "http://itemapi.test/api/items"
+                    }).done(function(items) {
+                        let output = "";
+                        $.each(items, function(key, item) {
+                            output += `<li class="list-group-item"> 
+                                <strong>${item.text}: </strong>${item.body} <a href="#" class="deleteLink" data-id="${item.id}">Delete</a>
+                                 </li>`; 
+                        });
+                        $("#items").append(output);
+                    });
+                }
+            });
+        </script>
+        <script type="text/javascript">
+            //Delete event
+            $('body').on('click', '.deleteLink' ,function(e) {
+                e.preventDefault();
+
+                let id = $(this).data('id');
+                deleteItem(id);
+            });
+
+            //Delete Item function
+            function deleteItem(id) {
+                $.ajax({
+                    method: 'POST',
+                    url: 'http://itemapi.test/api/items/'+id,
+                    data: {_method: 'DELETE'}
+                }).done(function(item) {
+                    alert('Item # '+id+' delete');
+                    location.reload();
+                });
+            };
+        </script>
+        <script type="text/javascript">
+            //Submit event
+            $("#itemForm").on("submit", function(e) {
+                e.preventDefault();
+
+                let text = $("#text").val();
+                let body = $("#body").val();
+
+                addItem(text, body);
+            });
+
+            //Insert items using API
+            function addItem(text, body) {
+                $.ajax({
+                    method: "POST",
+                    url: "http://itemapi.test/api/items",
+                    data: { text: text, body: body }
+                }).done(function(item) {
+                    alert("Item # " + item.id + " added");
+                    location.reload();
+                });
+            }
+        </script>
+    </body>
+</html>
